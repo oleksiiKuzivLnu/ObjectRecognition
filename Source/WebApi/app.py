@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from models.enums.pipe_line_plugin import PipeLinePlugin
+from models.enums.pipe_line_plugin_enum import PipeLinePlugin
 from models.image import Image
 from models.responses.input_media_process_response import InputMediaProcessResponse
 
