@@ -1,1 +1,137 @@
-/* You can add global styles to this file, and also import other style files */
+*,
+*:before,
+*:after {
+    user-select: none;
+    box-sizing: border-box;
+    font-family: "Be Vietnam Pro";
+}
+
+:root {
+    --main-background-color: #163b50;
+    --foreground-color: #373c48;
+    --button-background-color: #1a7f6c;
+    --border-radius: 15px;
+    --text-color: #d9d9d9;
+
+    body {
+        margin: 0;
+        box-sizing: border-box;
+    }
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-Thin.ttf);
+    font-weight: 100;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-ThinItalic.ttf);
+    font-weight: 100;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-ExtraLight.ttf);
+    font-weight: 200;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-ExtraLightItalic.ttf);
+    font-weight: 200;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-Light.ttf);
+    font-weight: 300;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-LightItalic.ttf);
+    font-weight: 300;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-Regular.ttf);
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-Italic.ttf);
+    font-weight: 400;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-Medium.ttf);
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-MediumItalic.ttf);
+    font-weight: 500;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-SemiBold.ttf);
+    font-weight: 600;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-SemiBoldItalic.ttf);
+    font-weight: 600;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-Bold.ttf);
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-BoldItalic.ttf);
+    font-weight: 700;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-ExtraBold.ttf);
+    font-weight: 800;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-ExtraBoldItalic.ttf);
+    font-weight: 800;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-Black.ttf);
+    font-weight: 900;
+}
+
+@font-face {
+    font-family: "Be Vietnam Pro";
+    src: url(assets/fonts/BeVietnamPro-BlackItalic.ttf);
+    font-weight: 900;
+    font-style: italic;
+}
