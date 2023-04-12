@@ -24,5 +24,5 @@ class FaceRecognitionPlugin(ImageProcessorPlugin):
                 cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 255, 0), 3, cv2.LINE_AA)
 
         _, img_bytearray = cv2.imencode('.jpg', img)
-        res = ImageArtifact(img_bytearray)
+        res = ImageArtifact(img_bytearray, {})
         return [res]
