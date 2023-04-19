@@ -13,5 +13,16 @@ class MediaProcessingPipeline:
         self._mediaFile = mediaFile
 
     def process(self) -> List[ImageArtifact]:
-        # media processing pipeline logic
-        pass
+        # create list of ImageProcessorPlugin objects
+        plugins = [self._pluginFactory.createPlugin(pluginId) for pluginId in self._imageProcessorPluginIds]
+
+        # get the ImageArtifacts from the media file using the media adapter factory
+        mediaAdapter = self._mediaAdapterFactory.createAdapter(self._mediaFile._mediaType)
+        imageArtifacts = mediaAdapter.toImageArtifacts(self._mediaFile)
+
+        # call each plugin in the specified order to process the input
+        for plugin in plugins:
+            imageArtifacts = plugin.process(imageArtifacts)
+        
+        # return the final output
+        return imageArtifacts
