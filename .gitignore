@@ -54,7 +54,6 @@ Thumbs.db
 *.swp
 
 # Virtual environment
-venv/
 env/
 
 # Scripts
