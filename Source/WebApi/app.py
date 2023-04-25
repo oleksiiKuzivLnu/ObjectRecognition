@@ -1,6 +1,6 @@
 from flask import Flask
 
-from controllers.image_recognition import blueprint
+from venv.controllers.image_recognition_controller import blueprint
 
 app = Flask(__name__)
 app.register_blueprint(blueprint)
