@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 
-model = YOLO('./best.pt')
+model = YOLO(os.path.abspath(r"./Source/WebApi/venv/business_layers/plugins/best.pt"))
 class_name_dict = {0: 'face'}
 threshold = 0.0001
 
