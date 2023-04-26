@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        // If you need a config for different browser then make one yourself
+        {
+            "name": "Launch",
+            "type": "chrome",
+            "request": "launch",
+            "webRoot": "${workspaceFolder}",
+            "url": "http://localhost:4200/",
+            "runtimeExecutable": "/usr/bin/vivaldi",
+            "userDataDir": "${workspaceFolder}/.browser-data",
+            "runtimeArgs": ["--force-dark-mode", "--disable-web-security"]
+        }
+    ]
+}
