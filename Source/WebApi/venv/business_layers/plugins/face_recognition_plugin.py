@@ -13,7 +13,10 @@ threshold = 0.0001
 
 class FaceRecognitionPlugin(ImageProcessorPlugin):
     def process(self, input: List[ImageArtifact]) -> List[ImageArtifact]:
-        img_np = np.frombuffer(input[0]._data, dtype=np.uint8)
+        with open('C:/1c698dd38f3d4aba.jpg', 'rb') as f:
+            img_bytes = f.read()
+
+        img_np = np.frombuffer(img_bytes, dtype=np.uint8) #input[0]._data
         photo = cv2.imdecode(img_np, cv2.IMREAD_COLOR)
         img = photo
         results= model(img)[0].boxes.data.tolist()
