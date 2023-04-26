@@ -1,0 +1,23 @@
+<div class="section input-section">
+    <p class="title">Input Files</p>
+
+    <div class="display"></div>
+
+    <div class="controls">
+        <app-button (onClick)="onUpload()">Upload New</app-button>
+    </div>
+</div>
+
+<div class="section output-section">
+    <p class="title">Output</p>
+
+    <div class="display"></div>
+
+    <div class="controls">
+        <app-button [disabled]="true">Download</app-button>
+    </div>
+</div>
+
+<div class="controls">
+    <app-button [disabled]="!processAvailable" (onClick)="onProcess()">Recognize</app-button>
+</div>

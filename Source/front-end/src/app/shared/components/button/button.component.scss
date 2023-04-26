@@ -1,0 +1,29 @@
+:host {
+    display: inline-block;
+    font-size: 48px;
+    font-weight: bold;
+    padding: 10px 30px;
+    background-color: var(--button-background-color);
+    color: inherit;
+    border-radius: var(--border-radius);
+    text-transform: uppercase;
+    box-shadow: 0px 5px black;
+    cursor: pointer;
+    transition-property: transform, box-shadow, filter;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-in;
+
+    &:hover:not(.disabled) {
+        filter: brightness(0.9);
+    }
+
+    &:active:not(.disabled) {
+        transform: translateY(5px);
+        box-shadow: none;
+    }
+
+    &.disabled {
+        cursor: not-allowed;
+        filter: grayscale(1);
+    }
+}
