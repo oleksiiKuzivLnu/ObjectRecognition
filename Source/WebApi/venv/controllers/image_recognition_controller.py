@@ -20,7 +20,7 @@ cors = CORS(blueprint)
 def process_media_files():
     request_data = request.get_json()
     files_to_process = request_data['filesToProcess']
-    media_files = list(map(lambda f: MediaFile(b64decode(f['data']), f['mediaType']), files_to_process))
+    media_files = list(map(lambda f: MediaFile(b64decode(f['data'].replace("data:image/jpeg;base64,", "")), f['mediaType']), files_to_process))
     processor_plugins = request_data['pipelines']
 
     images = []
