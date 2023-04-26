@@ -30,12 +30,12 @@ def process_media_files():
     for file in media_files:
         media_processing_pipeline = MediaProcessingPipeline(image_processor_plugin_factory, media_adapter_factory, processor_plugins, file)
         image_artifacts = media_processing_pipeline.process()
-        image_sublist = list(map(lambda ia: Image(ia.data), image_artifacts))
+        image_sublist = list(map(lambda ia: Image(ia._data).to_dict(), image_artifacts))
         images.extend(image_sublist)
 
     response = InputMediaProcessResponse(images)
 
-    return jsonify(response.__dict__)
+    return response.to_dict()
 
 
 @blueprint.route('/pipelines', methods=['GET'])
