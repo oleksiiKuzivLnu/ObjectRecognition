@@ -11,6 +11,7 @@ import { UploadFilesComponent } from './routes/upload-files/upload-files.compone
 import { WebcamComponent } from './routes/webcam/webcam.component';
 import { ButtonComponent } from './shared/components/button/button.component';
 import { HeaderComponent } from './shared/components/header/header.component';
+import { GalleryComponent } from './shared/components/gallery/gallery.component';
 
 // TODO: Organize modules in lazy manner
 @NgModule({
@@ -23,6 +24,7 @@ import { HeaderComponent } from './shared/components/header/header.component';
         UploadFilesComponent,
         AboutUsComponent,
         ContactUsComponent,
+        GalleryComponent,
     ],
     imports: [BrowserModule, AppRoutingModule, HttpClientModule],
     bootstrap: [AppComponent],

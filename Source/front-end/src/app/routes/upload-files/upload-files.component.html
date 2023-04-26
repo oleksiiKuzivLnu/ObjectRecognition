@@ -1,7 +1,12 @@
 <div class="section input-section">
     <p class="title">Input Files</p>
 
-    <div class="display"></div>
+    <app-gallery
+        class="display"
+        [allowImagesDeletion]="true"
+        [imagesUrls]="uploadedImagesURLs"
+        (onPhotoDelete)="onPhotoDelete($event)"
+    ></app-gallery>
 
     <div class="controls">
         <app-button (onClick)="onUpload()">Upload New</app-button>
@@ -11,13 +16,18 @@
 <div class="section output-section">
     <p class="title">Output</p>
 
-    <div class="display"></div>
+    <app-gallery
+        class="display"
+        [imagesUrls]="processedImagesURLs"
+    ></app-gallery>
 
     <div class="controls">
-        <app-button [disabled]="true">Download</app-button>
+        <app-button [disabled]="!downloadAvailable" (onClick)="onDownload()">Download</app-button>
     </div>
 </div>
 
 <div class="controls">
-    <app-button [disabled]="!processAvailable" (onClick)="onProcess()">Recognize</app-button>
+    <app-button [disabled]="!processAvailable" (onClick)="onProcess()"
+        >Recognize</app-button
+    >
 </div>
