@@ -6,5 +6,8 @@ from ...domains.models.image_artifact import ImageArtifact
 
 class JpegImageMediaAdapter(AbstractMediaAdapter):
     def toImageArtifacts(self, mediaFile: MediaFile) -> List[ImageArtifact]:
-        # jpeg image adapter logic
-        pass
+        # TODO: Review as it is temporary
+        buf = bytearray(mediaFile._data)
+        bytes_buf = bytes(buf)
+
+        return [ImageArtifact(bytes_buf, {})]

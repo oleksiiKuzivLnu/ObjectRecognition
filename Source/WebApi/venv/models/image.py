@@ -1,5 +1,10 @@
-
+import json
+import base64
 
 class Image:
     def __init__(self, data):
         self.data = data
+    def to_dict(self):
+        img_base64 = base64.b64encode(self.data)
+        img_base64_string = img_base64.decode("utf-8")
+        return "data:image/jpeg;base64," + img_base64_string

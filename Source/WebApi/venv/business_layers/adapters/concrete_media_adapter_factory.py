@@ -5,6 +5,6 @@ from .abstract_media_adapter import AbstractMediaAdapter
 
 class ConcreteMediaAdapterFactory(AbstractMediaAdapterFactory):
     def createAdapter(self, mediaType: str) -> 'AbstractMediaAdapter':
-        if mediaType == 'JPEG':
+        if mediaType == 'image/jpeg':
             return JpegImageMediaAdapter()
         raise ValueError(f"Unsupported media type")
