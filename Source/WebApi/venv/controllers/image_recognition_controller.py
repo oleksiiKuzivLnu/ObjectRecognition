@@ -1,6 +1,7 @@
 from base64 import b64decode
 
 from flask import jsonify, request, Blueprint
+from flask_cors import CORS, cross_origin
 
 from ..business_layers.adapters.concrete_media_adapter_factory import ConcreteMediaAdapterFactory
 from ..business_layers.factories.image_processor_plugin_concrete_factory import ImageProcessorPluginConcreteFactory
@@ -12,8 +13,10 @@ from ..models.responses.input_media_process_response import InputMediaProcessRes
 
 blueprint = Blueprint('blueprint', __name__)
 
+cors = CORS(blueprint)
 
 @blueprint.route('/process', methods=['POST'])
+@cross_origin()
 def process_media_files():
     request_data = request.get_json()
     files_to_process = request_data['filesToProcess']
@@ -36,6 +39,7 @@ def process_media_files():
 
 
 @blueprint.route('/pipelines', methods=['GET'])
+@cross_origin()
 def get_pipelines():
     pipelines = list()
     for pipeline in PipeLinePlugin:
