@@ -4,7 +4,7 @@
     <div class="display"></div>
 
     <div class="controls">
-        <app-button>Upload New</app-button>
+        <app-button (onClick)="onUpload()">Upload New</app-button>
     </div>
 </div>
 
@@ -19,5 +19,5 @@
 </div>
 
 <div class="controls">
-    <app-button>Recognize</app-button>
+    <app-button [disabled]="!processAvailable" (onClick)="onProcess()">Recognize</app-button>
 </div>

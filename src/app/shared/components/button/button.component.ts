@@ -1,4 +1,11 @@
-import { Component, HostBinding, Input } from '@angular/core';
+import {
+    Component,
+    EventEmitter,
+    HostBinding,
+    HostListener,
+    Input,
+    Output,
+} from '@angular/core';
 
 @Component({
     selector: 'app-button',
@@ -6,5 +13,16 @@ import { Component, HostBinding, Input } from '@angular/core';
     styleUrls: ['./button.component.scss'],
 })
 export class ButtonComponent {
+    @Output() private readonly onClick: EventEmitter<void> =
+        new EventEmitter<void>();
+
     @HostBinding('class.disabled') @Input() disabled: boolean = false;
+
+    @HostListener('click', ['$event']) private onClickCallback(): void {
+        if (this.disabled) {
+            return;
+        }
+
+        this.onClick.emit();
+    }
 }
