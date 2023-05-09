@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription, fromEvent, map, switchMap, tap } from 'rxjs';
 import {
@@ -13,7 +14,7 @@ import { ProcessService } from 'src/app/services/process.service';
     styleUrls: ['./upload-files.component.scss'],
 })
 export class UploadFilesComponent implements OnInit, OnDestroy {
-    public uploadedImagesURLs: string[] = [];
+    public filesPreviewsURLs: string[] = [];
     public processedImagesURLs: string[] = [];
 
     public get processAvailable(): boolean {
@@ -31,7 +32,23 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
 
     private readonly subscription: Subscription = new Subscription();
 
-    constructor(private readonly processService: ProcessService) {}
+    constructor(
+        private readonly processService: ProcessService,
+        private readonly location: Location
+    ) {
+        const locationState: {
+            filePreviewURL?: string;
+            fileToProcess?: IFile;
+        } = this.location.getState() as {
+            filePreviewURL?: string;
+            fileToProcess?: IFile;
+        };
+
+        if (locationState.filePreviewURL && locationState.fileToProcess) {
+            this.filesPreviewsURLs.push(locationState.filePreviewURL);
+            this.filesToProcess.push(locationState.fileToProcess);
+        }
+    }
 
     public ngOnInit(): void {
         const filesUploadSub: Subscription = fromEvent(
@@ -40,9 +57,10 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
         )
             .pipe(
                 map(this.extractFilesFromEvent.bind(this)),
-                tap((files: File[]) => {
-                    this.uploadedImagesURLs.push(
-                        ...this.extractFilesBlobURLs(files)
+                map(this.filterOutUnsupportedFiles.bind(this)),
+                tap(async (files: File[]) => {
+                    this.filesPreviewsURLs.push(
+                        ...(await this.extractFilesPreviewURLs(files))
                     );
                 }),
                 switchMap(this.convertFilesToBase64.bind(this)),
@@ -61,18 +79,16 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
     public onUpload(): void {
         this.filesInput.click();
     }
-   
-    public onPhotoDelete(index: number): void {
-        this.uploadedImagesURLs.splice(index, 1);
+
+    public onRemoveFile(index: number): void {
+        this.filesPreviewsURLs.splice(index, 1);
         this.filesToProcess.splice(index, 1);
 
-        this.filesInput.files = Array.from(this.filesInput.files as FileList)
-            .filter((_, i) => i !== index)
-            .reduce((dataTransferObject, file: File) => {
-                dataTransferObject.items.add(file);
-
-                return dataTransferObject;
-            }, new DataTransfer()).files;
+        this.filesInput.files = this.getFileListFromFiles(
+            Array.from(this.filesInput.files as FileList).filter(
+                (_, i) => i !== index
+            )
+        );
     }
 
     public onDownload(): void {
@@ -111,17 +127,83 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
         return Array.from((event.target as HTMLInputElement).files as FileList);
     }
 
-    private extractFilesBlobURLs(files: File[]): string[] {
-        return files.map((currentFile: File) =>
-            URL.createObjectURL(
-                new Blob([currentFile], {
-                    type: currentFile.type,
-                })
-            )
+    private filterOutUnsupportedFiles(files: File[]): File[] {
+        const filteredFiles: File[] = files.filter(
+            (currentFile: File) =>
+                currentFile.type.includes('image/jpg') ||
+                currentFile.type.includes('image/jpeg') ||
+                currentFile.type.includes('video/mp4')
+        );
+
+        this.filesInput.files = this.getFileListFromFiles(filteredFiles);
+
+        return filteredFiles;
+    }
+
+    private extractFilesPreviewURLs(files: File[]): Promise<string[]> {
+        return Promise.all(
+            files.map(
+                (currentFile: File) =>
+                    new Promise((resolve) => {
+                        if (currentFile.type.includes('video/mp4')) {
+                            resolve(this.getVideoPreviewUrl(currentFile));
+
+                            return;
+                        }
+
+                        resolve(this.getImagePreviewUrl(currentFile));
+                    })
+            ) as Promise<string>[]
         );
     }
 
-    private async convertFilesToBase64(files: File[]): Promise<IFile[]> {
+    private getImagePreviewUrl(file: File): string {
+        return URL.createObjectURL(
+            new Blob([file], {
+                type: file.type,
+            })
+        );
+    }
+
+    private getVideoPreviewUrl(file: File): Promise<string> {
+        return new Promise((resolve) => {
+            const videoURL: string = URL.createObjectURL(file);
+
+            const videoElement: HTMLVideoElement =
+                document.createElement('video');
+
+            const canvasElement: HTMLCanvasElement =
+                document.createElement('canvas');
+
+            videoElement.src = videoURL;
+            videoElement.muted = true;
+
+            videoElement.play();
+
+            videoElement.addEventListener('loadeddata', () => {
+                canvasElement.width = videoElement.videoWidth;
+                canvasElement.height = videoElement.videoHeight;
+
+                canvasElement
+                    .getContext('2d')!
+                    .drawImage(
+                        videoElement,
+                        0,
+                        0,
+                        videoElement.videoWidth,
+                        videoElement.videoHeight
+                    );
+
+                videoElement.pause();
+
+                canvasElement.toBlob((blob: Blob | null) => {
+                    resolve(URL.createObjectURL(blob as Blob));
+                }, 'image/jpeg');
+            });
+        });
+    }
+
+    private convertFilesToBase64(files: File[]): Promise<IFile[]> {
         const base64Promises: Promise<IFile>[] = [];
 
         files.forEach((currentFile: File) => {
@@ -131,7 +213,7 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
         return Promise.all(base64Promises);
     }
 
-    private async getFileData(file: File): Promise<IFile> {
+    private getFileData(file: File): Promise<IFile> {
         const fileReader: FileReader = new FileReader();
 
         return new Promise((resolve, reject) => {
@@ -144,5 +226,13 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
 
             fileReader.readAsDataURL(file);
         });
+    }
+
+    private getFileListFromFiles(files: File[]): FileList {
+        return files.reduce((dataTransferObject, file: File) => {
+            dataTransferObject.items.add(file);
+
+            return dataTransferObject;
+        }, new DataTransfer()).files;
     }
 }
