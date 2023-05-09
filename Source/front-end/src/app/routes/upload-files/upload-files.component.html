@@ -1,11 +1,11 @@
 <div class="section input-section">
     <p class="title">Input Files</p>
-  
+
     <app-gallery
         class="display"
         [allowImagesDeletion]="true"
-        [imagesUrls]="uploadedImagesURLs"
-        (onPhotoDelete)="onPhotoDelete($event)"
+        [imagesUrls]="filesPreviewsURLs"
+        (onPhotoDelete)="onRemoveFile($event)"
     ></app-gallery>
 
     <div class="controls">
