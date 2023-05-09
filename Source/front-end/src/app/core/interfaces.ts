@@ -3,6 +3,7 @@ export interface IProcessEndpointRequestBody {
     pipelines: ProcessingPluginType[];
 }
 
+
 export interface IProcessEndpointResponseBody {
     images: string[];
 }

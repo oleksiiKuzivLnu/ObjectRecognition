@@ -61,7 +61,7 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
     public onUpload(): void {
         this.filesInput.click();
     }
-
+   
     public onPhotoDelete(index: number): void {
         this.uploadedImagesURLs.splice(index, 1);
         this.filesToProcess.splice(index, 1);
