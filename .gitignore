@@ -77,6 +77,7 @@ Scripts/
 **/libpeerconnection.log
 **/testem.log
 **/typings
+**/best.pt
 
 #Browser data
 .browser-data

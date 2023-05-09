@@ -1,6 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription, fromEvent, switchMap, tap } from 'rxjs';
-import { IFile, ProcessingPluginType } from 'src/app/core/interfaces';
+import { Subscription, fromEvent, map, switchMap, tap } from 'rxjs';
+import {
+    IFile,
+    IProcessEndpointResponseBody,
+    ProcessingPluginType,
+} from 'src/app/core/interfaces';
 import { ProcessService } from 'src/app/services/process.service';
 
 @Component({
@@ -9,8 +13,15 @@ import { ProcessService } from 'src/app/services/process.service';
     styleUrls: ['./upload-files.component.scss'],
 })
 export class UploadFilesComponent implements OnInit, OnDestroy {
+    public uploadedImagesURLs: string[] = [];
+    public processedImagesURLs: string[] = [];
+
     public get processAvailable(): boolean {
         return this.filesToProcess.length > 0;
+    }
+
+    public get downloadAvailable(): boolean {
+        return this.processedImagesURLs.length > 0;
     }
 
     private readonly filesInput: HTMLInputElement =
@@ -28,7 +39,13 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
             'change'
         )
             .pipe(
-                switchMap(this.onFilesUpload.bind(this)),
+                map(this.extractFilesFromEvent.bind(this)),
+                tap((files: File[]) => {
+                    this.uploadedImagesURLs.push(
+                        ...this.extractFilesBlobURLs(files)
+                    );
+                }),
+                switchMap(this.convertFilesToBase64.bind(this)),
                 tap((base64Files: IFile[]) =>
                     this.filesToProcess.push(...base64Files)
                 )
@@ -44,21 +61,67 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
     public onUpload(): void {
         this.filesInput.click();
     }
+   
+    public onPhotoDelete(index: number): void {
+        this.uploadedImagesURLs.splice(index, 1);
+        this.filesToProcess.splice(index, 1);
+
+        this.filesInput.files = Array.from(this.filesInput.files as FileList)
+            .filter((_, i) => i !== index)
+            .reduce((dataTransferObject, file: File) => {
+                dataTransferObject.items.add(file);
+
+                return dataTransferObject;
+            }, new DataTransfer()).files;
+    }
+
+    public onDownload(): void {
+        this.processedImagesURLs.forEach(
+            (imageURL: string, currentImageIndex: number) => {
+                const link: HTMLAnchorElement = document.createElement('a');
+
+                link.href = imageURL;
+                link.download = `${currentImageIndex + 1}.jpg`;
+                link.click();
+            }
+        );
+    }
 
     public onProcess(): void {
+        this.processedImagesURLs = [];
+
         this.processService
             .process({
                 filesToProcess: this.filesToProcess,
                 pipelines: [ProcessingPluginType.FaceRecognition],
             })
+            .pipe(
+                tap((response: IProcessEndpointResponseBody) => {
+                    this.processedImagesURLs.push(...response.images);
+                })
+            )
             .subscribe();
     }
 
-    private async onFilesUpload(event: Event): Promise<IFile[]> {
-        const files: File[] = Array.from(
-            (event.target as HTMLInputElement).files as FileList
-        );
+    public ngOnDestroy(): void {
+        this.subscription.unsubscribe();
+    }
 
+    private extractFilesFromEvent(event: Event): File[] {
+        return Array.from((event.target as HTMLInputElement).files as FileList);
+    }
+
+    private extractFilesBlobURLs(files: File[]): string[] {
+        return files.map((currentFile: File) =>
+            URL.createObjectURL(
+                new Blob([currentFile], {
+                    type: currentFile.type,
+                })
+            )
+        );
+    }
+
+    private async convertFilesToBase64(files: File[]): Promise<IFile[]> {
         const base64Promises: Promise<IFile>[] = [];
 
         files.forEach((currentFile: File) => {
@@ -81,9 +144,5 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
 
             fileReader.readAsDataURL(file);
         });
-    }
-
-    public ngOnDestroy(): void {
-        this.subscription.unsubscribe();
     }
 }
