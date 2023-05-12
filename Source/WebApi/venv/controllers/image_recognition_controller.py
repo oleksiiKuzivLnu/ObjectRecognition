@@ -1,6 +1,6 @@
 from base64 import b64decode
 
-from flask import jsonify, request, Blueprint
+from flask import request, Blueprint
 from flask_cors import CORS, cross_origin
 
 from ..business_layers.adapters.concrete_media_adapter_factory import ConcreteMediaAdapterFactory
@@ -15,12 +15,20 @@ blueprint = Blueprint('blueprint', __name__)
 
 cors = CORS(blueprint)
 
+
 @blueprint.route('/process', methods=['POST'])
 @cross_origin()
 def process_media_files():
     request_data = request.get_json()
     files_to_process = request_data['filesToProcess']
-    media_files = list(map(lambda f: MediaFile(b64decode(f['data'].replace("data:image/jpeg;base64,", "")), f['mediaType']), files_to_process))
+
+    media_files = []
+    for f in files_to_process:
+        media_type = f['mediaType']
+        data = b64decode(f['data'].replace(f"data:{media_type};base64,", ""))
+        media_file = MediaFile(data, media_type)
+        media_files.append(media_file)
+
     processor_plugins = request_data['pipelines']
 
     images = []
@@ -30,8 +38,11 @@ def process_media_files():
     for file in media_files:
         media_processing_pipeline = MediaProcessingPipeline(image_processor_plugin_factory, media_adapter_factory, processor_plugins, file)
         image_artifacts = media_processing_pipeline.process()
-        image_sublist = list(map(lambda ia: Image(ia._data).to_dict(), image_artifacts))
-        images.extend(image_sublist)
+
+        mediaAdapter = media_adapter_factory.createAdapter(file.mediaType)
+        output_bytes = mediaAdapter.fromImageArtifacts(image_artifacts)
+        output_file = MediaFile(output_bytes, file.mediaType)
+        images.append(Image(output_file).to_dict())
 
     response = InputMediaProcessResponse(images)
 

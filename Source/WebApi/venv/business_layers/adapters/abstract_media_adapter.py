@@ -8,3 +8,7 @@ class AbstractMediaAdapter(ABC):
     @abstractmethod
     def toImageArtifacts(self, mediaFile: MediaFile) -> List[ImageArtifact]:
         pass
+
+    @abstractmethod
+    def fromImageArtifacts(self, imageArtifacts: List[ImageArtifact]) -> bytes:
+        pass
