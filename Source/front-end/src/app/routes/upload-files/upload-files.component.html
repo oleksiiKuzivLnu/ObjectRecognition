@@ -4,7 +4,7 @@
     <app-gallery
         class="display"
         [allowImagesDeletion]="true"
-        [imagesUrls]="filesPreviewsURLs"
+        [imagesUrls]="filesToProcessPreviewURLs"
         (onPhotoDelete)="onRemoveFile($event)"
     ></app-gallery>
 
@@ -18,12 +18,10 @@
 
     <app-gallery
         class="display"
-        [imagesUrls]="processedImagesURLs"
+        [allowImagesDownload]="true"
+        [imagesUrls]="processedFilesPreviewURLs"
+        (onPhotoDownload)="onDownload($event)"
     ></app-gallery>
-
-    <div class="controls">
-        <app-button [disabled]="!downloadAvailable" (onClick)="onDownload()">Download</app-button>
-    </div>
 </div>
 
 <div class="controls">
