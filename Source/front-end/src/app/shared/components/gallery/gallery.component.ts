@@ -8,6 +8,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 export class GalleryComponent {
     @Input() public imagesUrls: string[] = [];
     @Input() public allowImagesDeletion: boolean = false;
+    @Input() public allowImagesDownload: boolean = false;
 
-    @Output() public onPhotoDelete: EventEmitter<number> = new EventEmitter<number>();
+    @Output() public onPhotoDelete: EventEmitter<number> =
+        new EventEmitter<number>();
+
+    @Output() public onPhotoDownload: EventEmitter<number> =
+        new EventEmitter<number>();
 }

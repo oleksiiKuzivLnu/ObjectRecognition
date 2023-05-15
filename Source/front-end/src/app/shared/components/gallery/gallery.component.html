@@ -2,8 +2,10 @@
     *ngFor="let imageUrl of imagesUrls; index as index"
     class="image-container"
 >
-    <div *ngIf="allowImagesDeletion" class="buttons-container">
-        <button class="button" (click)="onPhotoDelete.emit(index)">❌</button>
+    <div class="buttons-container">
+        <button *ngIf="allowImagesDownload" class="button" (click)="onPhotoDownload.emit(index)">💾</button>
+
+        <button *ngIf="allowImagesDeletion" class="button" (click)="onPhotoDelete.emit(index)">❌</button>
     </div>
 
     <img class="image" [src]="imageUrl" />
