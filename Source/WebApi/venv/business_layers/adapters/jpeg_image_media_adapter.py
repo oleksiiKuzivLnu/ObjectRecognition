@@ -19,7 +19,10 @@ class JpegImageMediaAdapter(AbstractMediaAdapter):
 
         return [ImageArtifact(img, {})]
 
-    def fromImageArtifacts(self, imageArtifacts: List[ImageArtifact]) -> bytes:
+    def fromImageArtifacts(self, imageArtifacts: str | List[ImageArtifact]) -> bytes:
+        if (type(imageArtifacts) is str): # face reconstruction
+            return bytes(imageArtifacts, 'UTF-8')
+        
         assert len(imageArtifacts) == 1
 
         img = imageArtifacts[0].data
