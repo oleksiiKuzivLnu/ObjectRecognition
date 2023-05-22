@@ -16,6 +16,9 @@ import { ProcessService } from 'src/app/services/process.service';
 export class UploadFilesComponent implements OnInit, OnDestroy {
     public readonly filesToProcessPreviewURLs: string[] = [];
     public readonly processedFilesPreviewURLs: string[] = [];
+    public readonly processedVideoFilesPreviewURLs: string[] = [];
+    public readonly reconstructedModels: string[] = [];
+    public useFaceReconstruction: boolean = false;
 
     public get processAvailable(): boolean {
         return this.filesToProcess.length > 0;
@@ -90,9 +93,15 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
 
     public onDownload(index: number): void {
         const link: HTMLAnchorElement = document.createElement('a');
+        
+        let postfix = '';
+
+        if (this.processedFiles[index].type === 'application/octet-stream') {
+            postfix = '.obj';
+        }
 
         link.href = URL.createObjectURL(this.processedFiles[index]);
-        link.download = `${index + 1}`;
+        link.download = `${index + 1}${postfix}`;
         link.click();
     }
 
@@ -106,13 +115,30 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
         this.processService
             .process({
                 filesToProcess: this.filesToProcess,
-                pipelines: [ProcessingPluginType.FaceRecognition],
+                pipelines: [
+                    this.useFaceReconstruction ? 
+                    ProcessingPluginType.FaceReconstruction :
+                    ProcessingPluginType.FaceRecognition
+                ],
             })
             .pipe(
-                tap((response: IProcessEndpointResponseBody) =>
-                    this.processedFilesPreviewURLs.push(
-                        ...this.extractResponsesPreviewURLs(response.images)
-                    )
+                tap((response: IProcessEndpointResponseBody) => {
+                        const images = response.images.filter(
+                            img => img.startsWith('data:image/jpeg;base64,') || img.startsWith('data:video/mp4;base64,')
+                            );
+                        this.processedFilesPreviewURLs.push(
+                            ...this.extractResponsesPreviewURLs(images)
+                        );
+
+                        while(this.reconstructedModels.length > 0) {
+                            this.reconstructedModels.pop();
+                        }
+
+                        const reconstructionObjs = response.images
+                            .filter(img => img.startsWith('data:obj;base64,'))
+                            .map(img => atob(img.replace('data:obj;base64,', '')));
+                        this.reconstructedModels.push(...reconstructionObjs);
+                    }
                 ),
                 tap((response: IProcessEndpointResponseBody) =>
                     this.processedFiles.push(
@@ -166,6 +192,7 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
     private extractResponsesPreviewURLs(responseData: string[]): string[] {
         return responseData.map((currentFileData: string) => {
             if (currentFileData.includes('video/mp4')) {
+                // this.processedVideoFilesPreviewURLs.push(currentFileData)
                 return '/assets/icons/video.png';
             }
 
@@ -270,6 +297,6 @@ export class UploadFilesComponent implements OnInit, OnDestroy {
     }
 
     private getFileTypeFromBase64(base64: string): string {
-        return base64.split(';')[0].split(':')[1];
+        return base64.split(';')[0].split(':')[1].replace('obj', 'application/octet-stream');
     }
 }

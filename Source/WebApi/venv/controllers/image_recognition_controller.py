@@ -5,6 +5,7 @@ from flask_cors import CORS, cross_origin
 
 from ..business_layers.adapters.concrete_media_adapter_factory import ConcreteMediaAdapterFactory
 from ..business_layers.factories.image_processor_plugin_concrete_factory import ImageProcessorPluginConcreteFactory
+from ..business_layers.factories.image_reconstruction_plugin_concrete_factory import ImageReconstructionPluginConcreteFactory
 from ..business_layers.pipelines.media_processing_pipeline import MediaProcessingPipeline
 from ..domains.models.media_file import MediaFile
 from ..models.enums.pipe_line_plugin_enum import PipeLinePlugin
@@ -32,7 +33,11 @@ def process_media_files():
     processor_plugins = request_data['pipelines']
 
     images = []
-    image_processor_plugin_factory = ImageProcessorPluginConcreteFactory()
+    
+    if (processor_plugins[-1] == 'face_reconstruction'):
+        image_processor_plugin_factory = ImageReconstructionPluginConcreteFactory()
+    else:
+        image_processor_plugin_factory = ImageProcessorPluginConcreteFactory()
     media_adapter_factory = ConcreteMediaAdapterFactory()
 
     for file in media_files:
@@ -41,7 +46,10 @@ def process_media_files():
 
         mediaAdapter = media_adapter_factory.createAdapter(file.mediaType)
         output_bytes = mediaAdapter.fromImageArtifacts(image_artifacts)
-        output_file = MediaFile(output_bytes, file.mediaType)
+        mediaType = file.mediaType
+        if (processor_plugins[-1] == 'face_reconstruction'):
+            mediaType = 'obj'
+        output_file = MediaFile(output_bytes, mediaType)
         images.append(Image(output_file).to_dict())
 
     response = InputMediaProcessResponse(images)

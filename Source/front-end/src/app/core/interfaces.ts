@@ -15,4 +15,5 @@ export interface IFile {
 
 export enum ProcessingPluginType {
     FaceRecognition = 'face_recognition',
+    FaceReconstruction = 'face_reconstruction'
 }

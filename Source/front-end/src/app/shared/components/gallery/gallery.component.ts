@@ -7,6 +7,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 })
 export class GalleryComponent {
     @Input() public imagesUrls: string[] = [];
+    @Input() public videoUrls: string[] = [];
+    @Input() public reconstructedModels: string[] = [];
     @Input() public allowImagesDeletion: boolean = false;
     @Input() public allowImagesDownload: boolean = false;
 

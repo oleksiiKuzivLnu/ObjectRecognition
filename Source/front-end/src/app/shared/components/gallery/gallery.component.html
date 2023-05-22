@@ -8,5 +8,18 @@
         <button *ngIf="allowImagesDeletion" class="button" (click)="onPhotoDelete.emit(index)">❌</button>
     </div>
 
-    <img class="image" [src]="imageUrl" />
+    <img *ngIf="imageUrl" class="image" [src]="imageUrl" />
 </div>
+<div
+    *ngFor="let reconstructedModel of reconstructedModels; index as index"
+    class="image-container reconstruction-models"
+>
+    <div class="buttons-container">
+        <button *ngIf="allowImagesDownload" class="button" (click)="onPhotoDownload.emit(index)">💾</button>
+
+        <button *ngIf="allowImagesDeletion" class="button" (click)="onPhotoDelete.emit(index)">❌</button>
+    </div>
+
+    <app-three-obj-loader [objFileText]="reconstructedModel" />
+</div>
+

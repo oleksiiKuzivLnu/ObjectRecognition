@@ -1,0 +1,16 @@
+:host {
+    background-color: #000;
+    color: #fff;
+    margin: 0px;
+    overflow: hidden;
+  }
+  
+  #progressBar {
+    width: 500px;
+    height: 24px;
+    position: absolute;
+    left: 50%;
+    top: 60px;
+    margin-left: -250px;
+  }
+  
