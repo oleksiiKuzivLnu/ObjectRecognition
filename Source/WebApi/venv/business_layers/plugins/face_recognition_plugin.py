@@ -19,7 +19,7 @@ class FaceRecognitionPlugin(ImageProcessorPlugin):
 
         for image_artifact in input:
             img = image_artifact.data
-            results = model(img)[0].boxes.data.tolist()
+            results = model(img, device="cpu", verbose=False)[0].boxes.data.tolist()
             for result in results:
                 x1, y1, x2, y2, score, class_id = result
                 if score > threshold:
