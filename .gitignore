@@ -65,19 +65,19 @@ Thumbs.db
 *.swp
 
 # Virtual environment
-venv/
 env/
 
 # Scripts
 Scripts/
 
 # Miscellaneous
-.angular/cache
-.sass-cache/
-connect.lock
-libpeerconnection.log
-testem.log
-typings
+**/.angular/
+**/.sass-cache/
+**/connect.lock
+**/libpeerconnection.log
+**/testem.log
+**/typings
+**/best.pt
 
 #Browser data
 .browser-data

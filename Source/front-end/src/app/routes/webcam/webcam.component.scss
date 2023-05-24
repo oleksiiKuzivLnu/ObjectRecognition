@@ -7,7 +7,7 @@
         "controls" min-content
         / 1fr;
     width: 100%;
-    height: 100%;
+    height: calc(100% - 121px);
     padding: 50px;
     row-gap: 50px;
     color: var(--text-color);

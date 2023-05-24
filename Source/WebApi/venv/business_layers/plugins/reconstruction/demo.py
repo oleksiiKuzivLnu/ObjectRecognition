@@ -1,0 +1,174 @@
+import tensorflow as tf
+import numpy as np
+from PIL import Image
+from io import BytesIO
+import os
+import glob
+import platform
+import argparse
+from scipy.io import loadmat,savemat
+import base64
+
+from .preprocess_img import align_img
+from .utils import *
+from .face_decoder import Face3D
+from .options import Option
+
+from mtcnn import MTCNN
+import cv2
+
+is_windows = platform.system() == "Windows"
+
+def parse_args():
+
+    desc = "Deep3DFaceReconstruction"
+    parser = argparse.ArgumentParser(description=desc)
+
+    parser.add_argument('--pretrain_weights', type=str, default=None, help='path for pre-trained model')
+    parser.add_argument('--use_pb', type=int, default=1, help='validation data folder')
+
+    return parser.parse_args()
+
+def restore_weights(sess,opt):
+	var_list = tf.compat.v1.trainable_variables()
+	g_list = tf.compat.v1.global_variables()
+
+	# add batch normalization params into trainable variables 
+	bn_moving_vars = [g for g in g_list if 'moving_mean' in g.name]
+	bn_moving_vars += [g for g in g_list if 'moving_variance' in g.name]
+	var_list +=bn_moving_vars
+
+	# create saver to save and restore weights
+	saver = tf.compat.v1.train.Saver(var_list = var_list)
+	saver.restore(sess,opt.pretrain_weights)
+
+def getPoints(base64_string):
+	
+	# Decoding the base64 string
+	image_data = base64.b64decode(base64_string)
+
+	# Converting the decoded data into a NumPy array
+	image_np = np.frombuffer(image_data, dtype=np.uint8)
+
+	# Reading the image using cv2.imdecode()
+	img = cv2.imdecode(image_np, cv2.IMREAD_COLOR)
+	
+	# Converting the color from BGR to RGB
+	img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+	detector = MTCNN()
+	res = detector.detect_faces(img_rgb)
+	print(res)
+
+	keypoints = res[0]['keypoints']
+
+	left_eye = keypoints['left_eye']
+	right_eye = keypoints['right_eye']
+	nose = keypoints['nose']
+	mouth_left = keypoints['mouth_left']
+	mouth_right = keypoints['mouth_right']
+
+	formatted_keypoints = np.array([
+		np.array(left_eye),
+		np.array(right_eye),
+		np.array(nose),
+		np.array(mouth_left),
+		np.array(mouth_right)
+	])
+
+	# Creating a BytesIO object from the decoded data
+	image_bytes = BytesIO(image_data)
+
+	return Image.open(image_bytes), formatted_keypoints
+
+def save_obj_to_string(v,f,c):
+	res = ""
+	#with open(path,'w') as file:
+	for i in range(len(v)):
+		#file.write('v %f %f %f %f %f %f\n'%(v[i,0],v[i,1],v[i,2],c[i,0],c[i,1],c[i,2]))
+		res += 'v %f %f %f %f %f %f\n'%(v[i,0],v[i,1],v[i,2],c[i,0],c[i,1],c[i,2])
+
+	#file.write('\n')
+	res += '\n'
+
+	for i in range(len(f)):
+		#file.write('f %d %d %d\n'%(f[i,0],f[i,1],f[i,2]))
+		res += 'f %d %d %d\n'%(f[i,0],f[i,1],f[i,2])
+	return res
+	#file.close()
+
+def demo(img_base64):
+	# input and output folder
+	args = parse_args()
+
+	# read BFM face model
+	# transfer original BFM model to our model
+	if not os.path.isfile('./venv/business_layers/plugins/reconstruction/BFM/BFM_model_front.mat'):
+		transferBFM09()
+
+	# read standard landmarks for preprocessing images
+	lm3D = load_lm3d()
+	n = 0
+
+	# build reconstruction model
+	with tf.compat.v1.Graph().as_default() as graph:
+		
+		with tf.compat.v1.device('/cpu:0'):
+			opt = Option(is_train=False)
+		opt.batch_size = 1
+		opt.pretrain_weights = args.pretrain_weights
+		FaceReconstructor = Face3D()
+		images = tf.compat.v1.compat.v1.placeholder(name = 'input_imgs', shape = [opt.batch_size,224,224,3], dtype = tf.compat.v1.float32)
+
+		if args.use_pb and os.path.isfile('./venv/business_layers/plugins/reconstruction/network/FaceReconModel.pb'):
+			print('Using pre-trained .pb file.')
+			graph_def = load_graph('./venv/business_layers/plugins/reconstruction/network/FaceReconModel.pb')
+			tf.compat.v1.import_graph_def(graph_def,name='resnet',input_map={'input_imgs:0': images})
+			# output coefficients of R-Net (dim = 257) 
+			coeff = graph.get_tensor_by_name('resnet/coeff:0')
+		else:
+			print('Using pre-trained .ckpt file: %s'%opt.pretrain_weights)
+			import networks
+			coeff = networks.R_Net(images,is_training=False)
+
+		# reconstructing faces
+		FaceReconstructor.Reconstruction_Block(coeff,opt)
+		face_shape = FaceReconstructor.face_shape_t
+		face_texture = FaceReconstructor.face_texture
+		face_color = FaceReconstructor.face_color
+		landmarks_2d = FaceReconstructor.landmark_p
+		recon_img = FaceReconstructor.render_imgs
+		tri = FaceReconstructor.facemodel.face_buf
+
+
+		with tf.compat.v1.Session() as sess:
+			if not args.use_pb :
+				restore_weights(sess,opt)
+
+			print('reconstructing...')
+
+			# load images and corresponding 5 facial landmarks
+			img, lm = getPoints(img_base64)
+			# i,l = load_img(file,file.replace('png','txt').replace('jpg','txt'))
+			# preprocess input image
+			input_img,lm_new,transform_params = align_img(img,lm,lm3D)
+
+			coeff_,face_shape_,face_texture_,face_color_,landmarks_2d_,recon_img_,tri_ = sess.run([coeff,\
+				face_shape,face_texture,face_color,landmarks_2d,recon_img,tri],feed_dict = {images: input_img})
+
+
+			# reshape outputs
+			input_img = np.squeeze(input_img)
+			face_shape_ = np.squeeze(face_shape_, (0))
+			face_texture_ = np.squeeze(face_texture_, (0))
+			face_color_ = np.squeeze(face_color_, (0))
+			landmarks_2d_ = np.squeeze(landmarks_2d_, (0))
+			if not is_windows:
+				recon_img_ = np.squeeze(recon_img_, (0))
+
+			# save output files
+			# if not is_windows:
+			# 	savemat(os.path.join(save_path,"res.jpg".replace('.png','.mat').replace('jpg','mat')),{'cropped_img':input_img[:,:,::-1],'recon_img':recon_img_,'coeff':coeff_,\
+			# 		'face_shape':face_shape_,'face_texture':face_texture_,'face_color':face_color_,'lm_68p':landmarks_2d_,'lm_5p':lm_new})
+			res_obj_string = save_obj_to_string(face_shape_, tri_, np.clip(face_color_, 0, 255)/255) # 3D reconstruction face (in canonical view)
+			print(res_obj_string)
+			return res_obj_string

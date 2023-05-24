@@ -1,0 +1,58 @@
+:host {
+    display: grid;
+    
+    padding: 10px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px black;
+    background-color: var(--foreground-color);
+    overflow: auto;
+    &:not(:has(app-three-obj-loader)) {
+        grid: auto-flow / repeat(auto-fill, calc(100% / 3 - 7px));
+        grid-auto-rows: min-content;
+        grid-gap: 10px;
+    }
+
+    .image-container {
+        position: relative;
+        border-radius: var(--border-radius);
+        aspect-ratio: 1;
+        overflow: hidden;
+
+        .buttons-container {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            align-items: center;
+
+            .button {
+                width: 30px;
+                height: 30px;
+                background-color: transparent;
+                border: none;
+                transition: filter 0.2s ease-in-out;
+
+                &:hover {
+                    filter: brightness(0.9);
+                }
+
+                &:active {
+                    filter: brightness(0.7);
+                }
+
+                &:not(:last-child) {
+                    margin-right: 5px;
+                }
+            }
+        }
+
+        .image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+    .reconstruction-models {
+        margin-bottom: 450px;
+    }
+}

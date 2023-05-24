@@ -1,9 +1,21 @@
 <div class="section input-section">
     <p class="title">Input Files</p>
 
-    <div class="display"></div>
+    <app-gallery
+        class="display"
+        [allowImagesDeletion]="true"
+        [imagesUrls]="filesToProcessPreviewURLs"
+        (onPhotoDelete)="onRemoveFile($event)"
+    ></app-gallery>
 
     <div class="controls">
+        <input
+            type="checkbox"
+            name="scales"
+            [checked]="useFaceReconstruction"
+            (change)="useFaceReconstruction = !useFaceReconstruction"
+        >
+        <label class="checkbox" for="scales">Make face reconstruction</label>
         <app-button (onClick)="onUpload()">Upload New</app-button>
     </div>
 </div>
@@ -11,13 +23,18 @@
 <div class="section output-section">
     <p class="title">Output</p>
 
-    <div class="display"></div>
-
-    <div class="controls">
-        <app-button [disabled]="true">Download</app-button>
-    </div>
+    <app-gallery
+        class="display"
+        [allowImagesDownload]="true"
+        [imagesUrls]="processedFilesPreviewURLs"
+        [videoUrls]="processedVideoFilesPreviewURLs"
+        [reconstructedModels]="reconstructedModels"
+        (onPhotoDownload)="onDownload($event)"
+    ></app-gallery>
 </div>
 
 <div class="controls">
-    <app-button [disabled]="!processAvailable" (onClick)="onProcess()">Recognize</app-button>
+    <app-button [disabled]="!processAvailable" (onClick)="onProcess()"
+        >Recognize</app-button
+    >
 </div>

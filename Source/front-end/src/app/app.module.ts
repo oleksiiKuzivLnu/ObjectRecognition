@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
@@ -11,6 +11,10 @@ import { UploadFilesComponent } from './routes/upload-files/upload-files.compone
 import { WebcamComponent } from './routes/webcam/webcam.component';
 import { ButtonComponent } from './shared/components/button/button.component';
 import { HeaderComponent } from './shared/components/header/header.component';
+import { GalleryComponent } from './shared/components/gallery/gallery.component';
+import { ThreeObjLoaderComponent } from './three-obj-loader/three-obj-loader.component';
+import { SpinnerInterceptor } from './interceptors/spinner.interceptor';
+import { SpinnerComponent } from './shared/components/spinner/spinner.component';
 
 // TODO: Organize modules in lazy manner
 @NgModule({
@@ -23,8 +27,14 @@ import { HeaderComponent } from './shared/components/header/header.component';
         UploadFilesComponent,
         AboutUsComponent,
         ContactUsComponent,
+        GalleryComponent,
+        ThreeObjLoaderComponent,
+        SpinnerComponent,
     ],
     imports: [BrowserModule, AppRoutingModule, HttpClientModule],
     bootstrap: [AppComponent],
+    providers: [
+        { provide: HTTP_INTERCEPTORS, useClass: SpinnerInterceptor, multi: true }
+      ]
 })
 export class AppModule {}
